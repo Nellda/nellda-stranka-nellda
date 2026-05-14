@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archiv Mystic Falls | Oficiální Průvodce</title>
+    <style>
+        :root {
+            --blood: #7b0000;
+            --gold: #b39155;
+            --dark-gray: #1a1a1a;
+            --black: #0a0a0a;
+            --parchment: #dfd3b6;
+        }
+
+        body {
+            background-color: var(--black);
+            color: #e0e0e0;
+            font-family: 'Crimson Text', serif;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* --- ÚVODNÍ OBRÁZEK (HERO) --- */
+        .hero {
+            height: 65vh;
+            background: linear-gradient(rgba(0,0,0,0.2), var(--black)), 
+                        url('https://images6.fanpop.com/image/photos/40000000/TVD-Cast-Season-8-the-vampire-diaries-40037502-1600-900.jpg');
+            background-size: cover;
+            background-position: center top;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-bottom: 3px solid var(--blood);
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 7vw, 4.5rem);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            color: #fff;
+            text-shadow: 0 0 20px var(--blood);
+        }
+
+        .hero p {
+            color: var(--gold);
+            font-size: 1.3rem;
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        /* --- FILTROVÁNÍ --- */
+        .nav {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 10, 10, 0.95);
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            z-index: 1000;
+            border-bottom: 1px solid #333;
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 8px 18px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            transition: 0.3s;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--blood);
+            color: white;
+            border-color: var(--blood);
+        }
+
+        /* --- KARTY POSTAV --- */
+        .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--dark-gray);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid #333;
+            transition: 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 5px;
+            background: var(--blood);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--gold);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .card h3 { color: var(--gold); font-size: 1.6rem; margin: 10px 0; }
+        .card .tag { font-size: 0.7rem; text-transform: uppercase; color: #888; letter-spacing: 2px; }
+        .card p { font-size: 0.95rem; color: #bbb; }
+
+        /* --- MAPA (PLÁNEK) --- */
+        .map-section {
+            background: var(--parchment);
+            color: #3d2b1f;
+            padding: 40px;
+            margin: 60px 0;
+            border-radius: 8px;
+            background-image: url('https://www.transparenttextures.com/patterns/paper.png');
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .map-section h2 { font-family: 'Courier New', Courier, monospace; letter-spacing: 2px; }
+        
+        #mapOutput {
+            margin-top: 30px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #5a4030;
+            min-height: 50px;
+        }
+
+        /* --- KVÍZ --- */
+        .quiz-section {
+            background: #111;
+            padding: 40px;
+            border: 1px solid var(--blood);
+            border-radius: 15px;
+            margin-top: 50px;
+        }
+
+        .quiz-q { font-size: 1.5rem; color: var(--gold); margin-bottom: 25px; text-align: center; }
+        
+        .quiz-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: #222;
+            color: white;
+            border: 1px solid #444;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: 0.3s;
+        }
+
+        .quiz-btn:hover { background: var(--blood); border-color: var(--gold); }
+
+        #resultDisplay { display: none; text-align: center; }
+        #resultDisplay h2 { color: var(--gold); font-size: 2.2rem; }
+
+        footer { text-align: center; padding: 50px; opacity: 0.4; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <h1>Mystic Falls</h1>
+        <p>"Vše začíná a končí u rodiny."</p>
+    </section>
+
+    <div class="nav">
+        <button class="filter-btn active" onclick="filter('all', this)">Všichni</button>
+        <button class="filter-btn" onclick="filter('upír', this)">Upíři</button>
+        <button class="filter-btn" onclick="filter('původní', this)">Původní</button>
+        <button class="filter-btn" onclick="filter('čarodějka', this)">Čarodějky</button>
+        <button class="filter-btn" onclick="filter('hybrid', this)">Hybridi</button>
+    </div>
+
+    <div class="container">
+        
+        <div class="grid" id="mainGrid">
+            </div>
+
+        <div class="map-section">
+            <h2>📍 POBERTŮV PLÁNEK MYSTIC FALLS</h2>
+            <p>Sleduj stopy nadpřirozených bytostí v reálném čase:</p>
+            <select id="mapSelect" onchange="runMap()" style="padding: 12px; background: #3d2b1f; color: #dfd3b6; border: none; font-size: 1rem; cursor: pointer; margin-top: 15px;">
+                <option value="">-- Vyber místo k prozkoumání --</option>
+                <option value="grill">Mystic Grill</option>
+                <option value="house">Sídlo rodiny Salvatore</option>
+                <option value="mikaelson">Sídlo Mikaelsonových</option>
+                <option value="school">Střední škola Mystic Falls</option>
+                <option value="woods">Staré lesy a sklepení</option>
+            </select>
+            <div id="mapOutput">"Slavnostně přísahám, že jsem připraven ke každé špatnosti..."</div>
+        </div>
+
+        <div class="quiz-section">
+            <h2 style="text-align: center; color: var(--gold); margin-bottom: 30px;">Kvíz: Jaký je tvůj osud?</h2>
+            <div id="quizContent">
+                <div class="quiz-q" id="questionText">Načítání...</div>
+                <div id="optionsBox"></div>
+            </div>
+            <div id="resultDisplay">
+                <h2>Tvá pravá podstata:</h2>
+                <p id="resultName" style="font-size: 1.5rem; margin: 20px 0;"></p>
+                <button class="filter-btn" onclick="location.reload()">Zkusit znovu</button>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        © 2026 Archiv Mystic Falls | Vytvořeno pro fanoušky Upířích deníků
+    </footer>
+
+    <script>
+        // DATA POSTAV
+        const characters = [
+            { name: "Elena Gilbert", type: "upír", icon: "🩸", bio: "Dvojnice Petrova, která musela projít ztrátou, aby našla věčnost." },
+            { name: "Damon Salvatore", type: "upír", icon: "🦇", bio: "Sarkastický bratr s temnou minulostí, který miluje až za hrob." },
+            { name: "Stefan Salvatore", type: "upír", bio: "Mladší bratr, jehož soucit je jeho největší silou i slabostí.", icon: "📜" },
+            { name: "Klaus Mikaelson", type: "hybrid", icon: "🐺", bio: "Původní hybrid. Krutý vládce, který v hloubi duše touží po přijetí." },
+            { name: "Elijah Mikaelson", type: "původní", icon: "👔", bio: "Ušlechtilý upír, pro kterého je čest a rodinný slib nade vše." },
+            { name: "Rebekah Mikaelson", type: "původní", icon: "🗡️", bio: "Původní upírka, která pod maskou krutosti skrývá touhu po lidskosti." },
+            { name: "Bonnie Bennett", type: "čarodějka", icon: "✨", bio: "Mocná čarodějka, která drží rovnováhu mezi životem a smrtí." },
+            { name: "Caroline Forbes", type: "upír", icon: "🎀", bio: "Z perfekcionistky se stala jednou z nejsilnějších upírek ve městě." },
+            { name: "Niklaus 'Kol' Mikaelson", type: "původní", icon: "🔥", bio: "Divoký a nepředvídatelný člen rodiny Původních." }
+        ];
+
+        function filter(type, btn) {
+            const grid = document.getElementById('mainGrid');
+            const btns = document.querySelectorAll('.filter-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            grid.innerHTML = '';
+            const filtered = type === 'all' ? characters : characters.filter(c => c.type === type);
+            
+            filtered.forEach(c => {
+                grid.innerHTML += `
+                    <div class="card">
+                        <span class="card-icon">${c.icon}</span>
+                        <span class="tag">${c.type}</span>
+                        <h3>${c.name}</h3>
+                        <p>${c.bio}</p>
+                    </div>`;
+            });
+        }
+
+        // MAPA
+        const locs = {
+            grill: "👣 Damon Salvatore pije bourbon... 👣 Matt Donovan leští bar.",
+            house: "👣 Stefan Salvatore píše do deníku... 👣 Elena vchází do dveří.",
+            mikaelson: "👣 Elijah Mikaelson pálí dopis... 👣 Klaus kreslí v ateliéru.",
+            school: "👣 Caroline organizuje ples... 👣 Bonnie studuje v knihovně.",
+            woods: "👣 Tyler Lockwood se mění... 👣 Čarodějky provádějí rituál."
+        };
+
+        function runMap() {
+            const val = document.getElementById('mapSelect').value;
+            const out = document.getElementById('mapOutput');
+            out.innerText = val ? locs[val] : '"Slavnostně přísahám..."';
+        }
+
+        // KVÍZ
+        const questions = [
+            { q: "Jak reaguješ na zradu?", a: [{t:"Pomstím se krutě", s:"h"}, {t:"Zlomím vaz a jdu dál", s:"u"}, {t:"Odpustím, ale nezapomenu", s:"c"}, {t:"Rodina je víc než zrada", s:"p"}]},
+            { q: "Který předmět tě přitahuje?", a: [{t:"Lapis Lazuli prsten", s:"u"}, {t:"Starý grimoár", s:"c"}, {t:"Měsíční kámen", s:"h"}, {t:"Dýka z bílého dubu", s:"p"}]},
+            { q: "Co je tvůj největší dar?", a: [{t:"Nesmrtelnost", s:"u"}, {t:"Magická moc", s:"c"}, {t:"Síla dvou druhů", s:"h"}, {t:"Ušlechtilost", s:"p"}]},
+            { q: "Kde bys chtěl/a trávit večer?", a: [{t:"Na baru v Grillu", s:"u"}, {t:"U svíček a kouzel", s:"c"}, {t:"V lesích pod měsícem", s:"h"}, {t:"V rodinném sídle", s:"p"}]}
+        ];
+
+        let curQ = 0;
+        let score = { u:0, c:0, h:0, p:0 };
+
+        function loadQ() {
+            const q = questions[curQ];
+            document.getElementById('questionText').innerText = q.q;
+            const box = document.getElementById('optionsBox');
+            box.innerHTML = '';
+            q.a.forEach(ans => {
+                const b = document.createElement('button');
+                b.className = 'quiz-btn';
+                b.innerText = ans.t;
+                b.onclick = () => {
+                    score[ans.s]++;
+                    curQ++;
+                    if(curQ < questions.length) loadQ();
+                    else showRes();
+                };
+                box.appendChild(b);
+            });
+        }
+
+        function showRes() {
+            document.getElementById('quizContent').style.display = 'none';
+            const res = document.getElementById('resultDisplay');
+            const resN = document.getElementById('resultName');
+            
+            let winner = Object.keys(score).reduce((a, b) => score[a] > score[b] ? a : b);
+            
+            const titles = {
+                u: "Jsi UPÍR. Rychlost, krev a vášeň jsou tvým osudem.",
+                c: "Jsi ČARODĚJKA. Máš v rukou sílu přírody a předků.",
+                h: "Jsi HYBRID. Jsi unikátní, silný a nikdo tě nezastaví.",
+                p: "Jsi PŮVODNÍ. Jsi pilířem historie, věčný a nezdolný."
+            };
+
+            resN.innerText = titles[winner];
+            res.style.display = 'block';
+        }
+
+        // Start
+        filter('all', document.querySelector('.filter-btn'));
+        loadQ();
+    </script>
+</body>
+</html>
